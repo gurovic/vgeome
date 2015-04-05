@@ -54,7 +54,7 @@ class Vector:
             return (self.x - other.x == 0 and
                     self.y - other.y == 0)
         if type(other) != Vector:
-            return False
+            return (False)
 
     def __str__(self):
         return (str(self.x) + ' ' + str(self.y))
@@ -107,7 +107,7 @@ class Segment:
         if type(other) == Segment:
             return (abs(self) - abs(other) == 0)
         if type(other) != Segment:
-            return False
+            return (False)
 
     def __str__(self):
         return (str(self.A) + ' ' + str(self.B))
@@ -244,7 +244,7 @@ class Angle:
         if type(other) == Angle:
             return (abs(self) - abs(other) == 0)
         if type(other) != Angle:
-            return False
+            return (False)
 
     def __str__(self):
         return (str(self.O) + ' ' + str(self.first) + ' ' + str(self.second))
@@ -267,7 +267,7 @@ class Circle:
         if type(other) == Circle:
             return (self.radius - other.radius == 0)
         if type(other) != Circle:
-            return False
+            return (False)
 
     def __str__(self):
         return (str(self.O) + ' ' + str(self.radius))
@@ -353,7 +353,13 @@ class Triangle:
             self.ACB = Angle(first, third, second)
             self.BAC = Angle(second, first, third)
 
-    #def __eq__(self, other):
+    def __eq__(self, other):
+        if type(other) == Triangle:
+            return ((self.area() == other.area()) and
+                    (self.perimeter() == other.perimeter()) and
+                    (self.circumscribed_circle().radius == other.circumscribed_circle().radius))
+        if type(other) != Triangle:
+            return (False)
 
     def __str__(self):
         return (str(self.A) + ' ' + str(self.B) + ' ' + str(self.C))
