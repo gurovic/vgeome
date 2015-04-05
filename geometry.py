@@ -349,6 +349,9 @@ class Triangle:
             self.AB = Segment(first, second)
             self.BC = Segment(second, third)
             self.AC = Segment(first, third)
+            self.ABC = Angle(first, second, third)
+            self.ACB = Angle(first, third, second)
+            self.BAC = Angle(second, first, third)
 
     #def __eq__(self, other):
 
