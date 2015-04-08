@@ -157,7 +157,7 @@ class Line:
             self.second = self.first + Vector(-second, first)
 
     def __str__(self):
-        return (str(self.A) + ' ' + str(self.B) + ' ' + str(self.C) + ' ' + str(self.first) + ' ' + str(self.second))
+        return (str(self.A) + ' ' + str(self.B) + ' ' + str(self.C))
 
     def __rshift__(self, other):
         if type(other) == Point:
@@ -226,7 +226,7 @@ class Beam:
     def __str__(self):
         return (str(self.O) + ' ' + str(self.direct))
 
-class half_plane:
+class Semiplane:
     def __init__(self, line, other):
         if type(other) == Point:
             self.sign = str(Vector(line.first, line.second) * Vector(line.first, other))[0]
@@ -257,24 +257,27 @@ class half_plane:
 
 class Angle:
 
-    def __init__(self, first, second, third):
-        if type(first) == Point and type(second) == Point and type(third) == Point:
-            self.O = second
-            self.first = Vector(second, first)
-            self.second = Vector(second, third)
-        if type(first) == Point and type(second) == Vector and type(third) == Vector:
-            self.O = first
-            self.first = second
-            self.second = third
-
-    def __contains__(self, other):
-        if (((Triangle(self.a, other, self.o).area() <= 0 and Triangle(self.a, self.b, self.o).area() <= 0)
-            and (Triangle(self.b, other, self.o).area() >= 0 and Triangle(self.b, self.a, self.o).area() >= 0))
-            or ((Triangle(self.a, other, self.o).area() >= 0 and Triangle(self.a, self.b, self.o).area() >= 0)
-            and (Triangle(self.b, other, self.o).area() <= 0 and Triangle(self.b, self.a, self.o).area() <= 0))):
-            return True
-        else:
-            return False      
+    def __init__(self, first, second, third=None):
+        if third == None:
+            if type(first) == Beam and type(second) == Beam:
+                self.first = first.direct
+                self.second = second.direct
+                self.O = first.O
+                self.A = first.O + first.direct
+                self.B = second.O + second.direct
+        if third != None:
+            if type(first) == Point and type(second) == Point and type(third) == Point:
+                self.first = Vector(second, first)
+                self.second = Vector(second, third)
+                self.O = second
+                self.A = first
+                self.B = third
+            if type(first) == Point and type(second) == Vector and type(third) == Vector:
+                self.first = second
+                self.second = third
+                self.O = first
+                self.A = first + second
+                self.B = first + third
 
     def __eq__(self, other):
         if type(other) == Angle:
@@ -284,6 +287,12 @@ class Angle:
 
     def __str__(self):
         return (str(self.O) + ' ' + str(self.first) + ' ' + str(self.second))
+    
+    def __contains__(self, other):
+        return (((Triangle(self.A, other, self.O).oriented_area() <= 0 and Triangle(self.A, self.B, self.O).oriented_area() <= 0) and
+                 (Triangle(self.B, other, self.O).oriented_area() >= 0 and Triangle(self.B, self.A, self.O).oriented_area() >= 0)) or
+                ((Triangle(self.A, other, self.O).oriented_area() >= 0 and Triangle(self.A, self.B, self.O).oriented_area() >= 0) and
+                 (Triangle(self.B, other, self.O).oriented_area() <= 0 and Triangle(self.B, self.A, self.O).oriented_area() <= 0)))
     
     def __abs__(self):
         return (math.acos(self.first ** other.first / (abs(self.first) * abs(self.second))))
@@ -391,9 +400,8 @@ class Triangle:
 
     def __eq__(self, other):
         if type(other) == Triangle:
-            return ((self.area() == other.area()) and
-                    (self.perimeter() == other.perimeter()) and
-                    (self.circumscribed_circle().radius == other.circumscribed_circle().radius))
+            return ({self.AB, self.BC, self.AC} ==
+                    {other.AB, other.BC, other.AC})
         if type(other) != Triangle:
             return (False)
 
