@@ -157,8 +157,7 @@ class Line:
             self.second = self.first + Vector(-second, first)
 
     def __str__(self):
-        return (str(self.A) + ' ' + str(self.B) + ' ' + str(self.C) + ' ' +
-                str(self.first) + ' ' + str(self.second))
+        return (str(self.A) + ' ' + str(self.B) + ' ' + str(self.C) + ' ' + str(self.first) + ' ' + str(self.second))
 
     def __rshift__(self, other):
         if type(other) == Point:
@@ -227,6 +226,34 @@ class Beam:
     def __str__(self):
         return (str(self.O) + ' ' + str(self.direct))
 
+class half_plane:
+    def __init__(self, line, other):
+        if type(other) == Point:
+            self.sign = str(Vector(line.first, line.second) * Vector(line.first, other))[0]
+            self.line = line
+            self.vec = Vector(line.first, line.second)
+            
+    def __contains__(self, other):
+        if type(other) == Point:
+            return (str(self.vec * Vector(self.line.first, other))[0] == self.sign
+                    or str(self.vec * Vector(self.line.first, other))[0] == 0)
+        if type(other) == Line:
+            pass
+        if type(other) == Beam:
+            if other.point in self:
+                return (str(self.vec * other.vec)[0] == self.sign
+                        or str(self.vec * other.vec)[0] == 0)
+        if type(other) == Triangle:
+            return ((str(self.vec * Vector(self.line.first, other.A))[0] == self.sign
+                    or str(self.vec * Vector(self.line.first, other.A))[0] == 0) and
+                    (str(self.vec * Vector(self.line.first, other.B))[0] == self.sign
+                    or str(self.vec * Vector(self.line.first, other.A))[0] == 0) and
+                    (str(self.vec * Vector(self.line.first, other.B))[0] == self.sign
+                    or str(self.vec * Vector(self.line.first, other.B))[0] == 0))
+        if type(other) == Circle:
+            if other.O in self:
+                return other.radius <= (other.O >> self.line)
+
 
 class Angle:
 
@@ -239,6 +266,15 @@ class Angle:
             self.O = first
             self.first = second
             self.second = third
+
+    def __contains__(self, other):
+        if (((Triangle(self.a, other, self.o).area() <= 0 and Triangle(self.a, self.b, self.o).area() <= 0)
+            and (Triangle(self.b, other, self.o).area() >= 0 and Triangle(self.b, self.a, self.o).area() >= 0))
+            or ((Triangle(self.a, other, self.o).area() >= 0 and Triangle(self.a, self.b, self.o).area() >= 0)
+            and (Triangle(self.b, other, self.o).area() <= 0 and Triangle(self.b, self.a, self.o).area() <= 0))):
+            return True
+        else:
+            return False      
 
     def __eq__(self, other):
         if type(other) == Angle:
@@ -401,12 +437,12 @@ class Triangle:
 
     def orthocenter(self):
         return (Line(self.A, self.B).perpendicular_line(self.C) &
-                Line(self.A, self.C).perpendiculsr_line(self.B))
+                Line(self.A, self.C).perpendicular_line(self.B))
 
     def circumcenter(self):
-        return (Line(self.A, self.B).perpendicular(Point((self.A.x + self.B.x) / 2,
+        return (Line(self.A, self.B).perpendicular_line(Point((self.A.x + self.B.x) / 2,
                                                          (self.A.y + self.B.y) / 2)) &
-                Line(self.A, self.C).perpendicular(Point((self.A.x + self.C.x) / 2,
+                Line(self.A, self.C).perpendicular_line(Point((self.A.x + self.C.x) / 2,
                                                          (self.A.y + self.C.y) / 2)))
 
     def inscribed_circle(self):
