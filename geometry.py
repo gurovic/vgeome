@@ -9,6 +9,9 @@ class Point:
             self.x = first
             self.y = second
 
+    def __str__(self):
+        return ('Point' + ' ' + str(self.x) + ' ' + str(self.y))
+
     def __add__(self, other):
         if type(other) == Vector:
             return (Point(self.x + other.x,
@@ -34,9 +37,6 @@ class Point:
                 return (min(self >> other.A,
                             self >> other.B))
 
-    def __str__(self):
-        return (str(self.x) + ' ' + str(self.y))
-
 
 class Vector:
 
@@ -47,7 +47,13 @@ class Vector:
             self.y = second
         if type(first) == Point and type(second) == Point:
             self.x = second.x - first.x
-            self.y = second.y - first.y        
+            self.y = second.y - first.y
+
+    def __str__(self):
+        return ('Vector' + ' ' + str(self.x) + ' ' + str(self.y))
+
+    def __abs__(self):
+        return ((self.x ** 2 + self.y ** 2) ** 0.5)
 
     def __eq__(self, other):
         if type(other) == Vector:
@@ -55,9 +61,6 @@ class Vector:
                     self.y - other.y == 0)
         if type(other) != Vector:
             return (False)
-
-    def __abs__(self):
-        return ((self.x ** 2 + self.y ** 2) ** 0.5)
 
     def __add__(self, other):
         if type(other) == Vector:
@@ -92,54 +95,6 @@ class Vector:
             return (Vector(self.x // other,
                            self.y // other))
 
-    def __str__(self):
-        return (str(self.x) + ' ' + str(self.y))
-
-
-class Segment:
-
-    def __init__(self, first, second):
-        if type(first) == Point and type(second) == Point:
-            self.A = first
-            self.B = second
-
-    def __eq__(self, other):
-        if type(other) == Segment:
-            return (abs(self) - abs(other) == 0)
-        if type(other) != Segment:
-            return (False)
-
-    def __abs__(self):
-        return (self.A >> self.B)
-
-    def __add__(self, other):
-        if type(other) == Vector:
-            return (Segment(self.A + other,
-                            self.B + other))
-
-    def __sub__(self, other):
-        if type(other) == Vector:
-            return (Segment(self.A - other,
-                            self.B - other))
-
-    def __rshift__(self, other):
-        if type(other) == Point:
-            if (Vector(self.A, other) ** Vector(self.A, self.B) > 0 and
-                Vector(self.B, other) ** Vector(self.B, self.A) > 0):
-                return (other >> Line(self.A, self.B))
-            if (Vector(self.A, other) ** Vector(self.A, self.B) <= 0 or
-                Vector(self.B, other) ** Vector(self.B, self.A) <= 0):
-                return (min(other >> self.A,
-                            other >> self.B))
-
-    def __contains__(self, other):
-        if type(other) == Point:
-            return (other >> self == 0)
-        
-
-    def __str__(self):
-        return (str(self.A) + ' ' + str(self.B))
-
 
 class Line:
 
@@ -157,6 +112,9 @@ class Line:
             self.first = Point(-(first * third) / (first ** 2 + second ** 2),
                                -(second * third) / (first ** 2 + second ** 2))
             self.second = self.first + Vector(-second, first)
+
+    def __str__(self):
+        return ('Line' + ' ' + str(self.A) + ' ' + str(self.B) + ' ' + str(self.C))
 
     def __rshift__(self, other):
         if type(other) == Point:
@@ -210,9 +168,137 @@ class Line:
             return (Line(-self.B,
                          self.A,
                          self.B * other.x - self.A * other.y))
-        
+
+
+class Circle:
+
+    def __init__(self, first, second, third=None):
+        if third == None:
+            self.O = first
+            self.radius = second
+        if third != None:
+            self.O = Triangle(self, first, second).circumscribed_circle().O
+            self.radius = Triangle(self, first, second).circumscribed_circle().radius
+
     def __str__(self):
-        return (str(self.A) + ' ' + str(self.B) + ' ' + str(self.C))
+        return ('Circle' + ' ' + str(self.O) + ' ' + str(self.radius))
+
+    def __eq__(self, other):
+        if type(other) == Circle:
+            return (self.radius - other.radius == 0)
+        if type(other) != Circle:
+            return (False)
+
+    def __contains__(self, other):
+        if type(other) == Point:
+            return (self.O >> other == self.radius)
+
+    def __and__(self, other):
+            if type(other) == Line:
+                if self.O >> other == self.radius:
+                    return (other & other.perpendicular_line(self.O))
+                if self.O >> other < self.radius:
+                    return ((other & other.perpendicular_line(self.O)) +
+                            +(Vector(other.first, other.second)) *
+                            (self.radius ** 2 - (self.O >> other) ** 2) ** 0.5,
+                            (other & other.perpendicular_line(self.O)) -
+                            +(Vector(other.first, other.second)) *
+                            (self.radius ** 2 - (self.O >> other) ** 2) ** 0.5)
+                if self.O >> other > self.radius:
+                    return (None)
+            if type(other) == Circle:
+                if self.O == other.O:
+                    if self.radius == other.radius:
+                        return (False)
+                    if self.radius != other.radius:
+                        return (None)
+                if (self.O != other.O and
+                    self.O >> other.O > self.radius):
+                    if self.O >> other.O == self.radius + other.radius:
+                        return (self.O + (+(Vector(self.O, other.O)) * self.radius))
+                    if self.O >> other.O < self.radius + other.radius:
+                        return (self & Line(self.O, other.O).perpendicular_line(self.O +
+                                                                                          +(Vector(self.O, other.O)) *
+                                                                                          (self.radius ** 2 - other.radius ** 2 +
+                                                                                           (self.O >> other.O) ** 2) /
+                                                                                          ((self.O >> other.O) * 2)))
+                    if self.O >> other.O > self.radius + other.radius:
+                        return (None)
+                if (self.O != other.O and
+                    self.O >> other.O < self.radius):
+                    if self.O >> other.O == self.radius - other.radius:
+                        return (self.O + (Vector(self.O, other.O) /
+                                               +(Vector(self.O, other.O)) +
+                                               self.radius))
+                    if self.O >> other.O > self.radius - other.radius:
+                        return (self & Line(self.O, other.O).perpendicular_line(self.O +
+                                                                                          +(Vector(self.O, other.O)) *
+                                                                                          (self.radius ** 2 - other.radius ** 2 +
+                                                                                           (self.O >> other.O) ** 2) /
+                                                                                          ((self.O >> other.O) * 2)))
+                    if self.O >> other.O < self.radius - other.radius:
+                        return (None)
+
+    def perimeter(self):
+        return (self.radius * 2 * math.pi)
+
+    def area(self):
+        return (self.radius ** 2 * math.pi)
+
+    def tangent_line(self, other):
+        if type(other) == Point:
+            if other in Circle:
+                return (Line(self.O, other).perpendicular_line(other))
+            if other not in Circle:
+                if self.O >> other < self.radius:
+                    return (None)
+                if self.O >> other > self.radius:
+                    return (Line(other, self & Circle(other, ((self.O >> other) ** 2 - self.radius ** 2) ** 0.5))[0],
+                            Line(other, self & Circle(other, ((self.O >> other) ** 2 - self.radius ** 2) ** 0.5))[1])
+
+
+class Segment:
+
+    def __init__(self, first, second):
+        if type(first) == Point and type(second) == Point:
+            self.A = first
+            self.B = second
+
+    def __str__(self):
+        return ('Segment' + ' ' + str(self.A) + ' ' + str(self.B))
+
+    def __abs__(self):
+        return (self.A >> self.B)
+
+    def __eq__(self, other):
+        if type(other) == Segment:
+            return (abs(self) - abs(other) == 0)
+        if type(other) != Segment:
+            return (False)
+
+    def __add__(self, other):
+        if type(other) == Vector:
+            return (Segment(self.A + other,
+                            self.B + other))
+
+    def __sub__(self, other):
+        if type(other) == Vector:
+            return (Segment(self.A - other,
+                            self.B - other))
+
+    def __rshift__(self, other):
+        if type(other) == Point:
+            if (Vector(self.A, other) ** Vector(self.A, self.B) > 0 and
+                Vector(self.B, other) ** Vector(self.B, self.A) > 0):
+                return (other >> Line(self.A, self.B))
+            if (Vector(self.A, other) ** Vector(self.A, self.B) <= 0 or
+                Vector(self.B, other) ** Vector(self.B, self.A) <= 0):
+                return (min(other >> self.A,
+                            other >> self.B))
+
+    def __contains__(self, other):
+        if type(other) == Point:
+            return (other >> self == 0)
 
 
 class Beam:
@@ -224,7 +310,10 @@ class Beam:
         if type(second) == Vector:
             self.O = first
             self.direct = second
-            
+
+    def __str__(self):
+        return ('Beam' + ' ' + str(self.O) + ' ' + str(self.direct))
+
     def __rshift__(self, other):
         if type(other) == Point:
             if Vector(self.O, other) ** self.direct > 0:
@@ -235,9 +324,6 @@ class Beam:
     def __contains__(self, other):
         if type(other) == Point:
             return (other >> self == 0)
-    
-    def __str__(self):
-        return (str(self.O) + ' ' + str(self.direct))
 
 
 class Semiplane:
@@ -293,110 +379,24 @@ class Angle:
                 self.O = first
                 self.A = first + second
                 self.B = first + third
+                
+    def __str__(self):
+        return ('Angle' + ' ' + str(self.O) + ' ' + str(self.first) + ' ' + str(self.second))
+
+    def __abs__(self):
+        return (math.acos(self.first ** other.first / (abs(self.first) * abs(self.second))))
 
     def __eq__(self, other):
         if type(other) == Angle:
             return (abs(self) - abs(other) == 0)
         if type(other) != Angle:
             return (False)
-    
+
     def __contains__(self, other):
         return (((Triangle(self.A, other, self.O).oriented_area() <= 0 and Triangle(self.A, self.B, self.O).oriented_area() <= 0) and
                  (Triangle(self.B, other, self.O).oriented_area() >= 0 and Triangle(self.B, self.A, self.O).oriented_area() >= 0)) or
                 ((Triangle(self.A, other, self.O).oriented_area() >= 0 and Triangle(self.A, self.B, self.O).oriented_area() >= 0) and
                  (Triangle(self.B, other, self.O).oriented_area() <= 0 and Triangle(self.B, self.A, self.O).oriented_area() <= 0)))
-    
-    def __abs__(self):
-        return (math.acos(self.first ** other.first / (abs(self.first) * abs(self.second))))
-
-    def __str__(self):
-        return (str(self.O) + ' ' + str(self.first) + ' ' + str(self.second))
-
-
-class Circle:
-
-    def __init__(self, first, second, third=None):
-        if third == None:
-            self.O = first
-            self.radius = second
-        if third != None:
-            self.O = Triangle(self, first, second).circumscribed_circle().O
-            self.radius = Triangle(self, first, second).circumscribed_circle().radius
-
-    def __eq__(self, other):
-        if type(other) == Circle:
-            return (self.radius - other.radius == 0)
-        if type(other) != Circle:
-            return (False)
-    
-    def __abs__(self):
-        return (self.raius * math.pi * 2)
-
-    def __contains__(self, other):
-        if type(other) == Point:
-            return (self.O >> other == self.radius)
-
-    def __and__(self, other):
-            if type(other) == Line:
-                if self.O >> other == self.radius:
-                    return (other & other.perpendicular_line(self.O))
-                if self.O >> other < self.radius:
-                    return ((other & other.perpendicular_line(self.O)) +
-                            +(Vector(other.first, other.second)) *
-                            (self.radius ** 2 - (self.O >> other) ** 2) ** 0.5,
-                            (other & other.perpendicular_line(self.O)) -
-                            +(Vector(other.first, other.second)) *
-                            (self.radius ** 2 - (self.O >> other) ** 2) ** 0.5)
-                if self.O >> other > self.radius:
-                    return (None)
-            if type(other) == Circle:
-                if self.O == other.O:
-                    if self.radius == other.radius:
-                        return (False)
-                    if self.radius != other.radius:
-                        return (None)
-                if (self.O != other.O and
-                    self.O >> other.O > self.radius):
-                    if self.O >> other.O == self.radius + other.radius:
-                        return (self.O + (+(Vector(self.O, other.O)) * self.radius))
-                    if self.O >> other.O < self.radius + other.radius:
-                        return (self & Line(self.O, other.O).perpendicular_line(self.O +
-                                                                                          +(Vector(self.O, other.O)) *
-                                                                                          (self.radius ** 2 - other.radius ** 2 +
-                                                                                           (self.O >> other.O) ** 2) /
-                                                                                          ((self.O >> other.O) * 2)))
-                    if self.O >> other.O > self.radius + other.radius:
-                        return (None)
-                if (self.O != other.O and
-                    self.O >> other.O < self.radius):
-                    if self.O >> other.O == self.radius - other.radius:
-                        return (self.O + (Vector(self.O, other.O) /
-                                               +(Vector(self.O, other.O)) +
-                                               self.radius))
-                    if self.O >> other.O > self.radius - other.radius:
-                        return (self & Line(self.O, other.O).perpendicular_line(self.O +
-                                                                                          +(Vector(self.O, other.O)) *
-                                                                                          (self.radius ** 2 - other.radius ** 2 +
-                                                                                           (self.O >> other.O) ** 2) /
-                                                                                          ((self.O >> other.O) * 2)))
-                    if self.O >> other.O < self.radius - other.radius:
-                        return (None)
-                    
-    def __str__(self):
-        return (str(self.O) + ' ' + str(self.radius))
-
-    def tangent_line(self, other):
-        if type(other) == Point:
-            if other in Circle:
-                return (Line(self.O, other).perpendicular_line(other))
-            if other not in Circle:
-                if self.O >> other < self.radius:
-                    return (None)
-                if self.O >> other > self.radius:
-                    return (Line(other, self & Circle(other, ((self.O >> other) ** 2 - self.radius ** 2) ** 0.5))[0],
-                            Line(other, self & Circle(other, ((self.O >> other) ** 2 - self.radius ** 2) ** 0.5))[1])
-    def area(self):
-        return (self.radius ** 2 * math.pi)
 
 
 class Triangle:
@@ -412,6 +412,9 @@ class Triangle:
             self.ABC = Angle(first, second, third)
             self.ACB = Angle(first, third, second)
             self.BAC = Angle(second, first, third)
+
+    def __str__(self):
+        return ('Triangle' + ' ' + str(self.A) + ' ' + str(self.B) + ' ' + str(self.C))
 
     def __eq__(self, other):
         if type(other) == Triangle:
@@ -431,9 +434,6 @@ class Triangle:
             return (Triangle(self.A - other,
                              self.B - other,
                              self.C - other))
-        
-    def __str__(self):
-        return (str(self.A) + ' ' + str(self.B) + ' ' + str(self.C))
 
     def perimeter(self):
         return (self.AB + self.BC + self.AC)
