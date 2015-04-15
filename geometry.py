@@ -127,7 +127,8 @@ class Segment:
             if (Vector(self.A, other) ** Vector(self.A, self.B) > 0 and
                 Vector(self.B, other) ** Vector(self.B, self.A) > 0):
                 return (other >> Line(self.A, self.B))
-            else:
+            if (Vector(self.A, other) ** Vector(self.A, self.B) <= 0 or
+                Vector(self.B, other) ** Vector(self.B, self.A) <= 0):
                 return (min(other >> self.A,
                             other >> self.B))
 
@@ -224,8 +225,17 @@ class Beam:
             self.O = first
             self.direct = second
             
-            
+    def __rshift__(self, other):
+        if type(other) == Point:
+            if Vector(self.O, other) ** self.direct > 0:
+                return (other >> Line(self.O, self.O + self.direct))
+            if vector(self.O, other) ** self.direct <= 0:
+                return (other >> self.O)
 
+    def __contains__(self, other):
+        if type(other) == Point:
+            return (other >> self == 0)
+    
     def __str__(self):
         return (str(self.O) + ' ' + str(self.direct))
 
