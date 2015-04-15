@@ -326,36 +326,6 @@ class Beam:
             return (other >> self == 0)
 
 
-class Semiplane:
-    
-    def __init__(self, line, other):
-        if type(other) == Point:
-            self.sign = str(Vector(line.first, line.second) * Vector(line.first, other))[0]
-            self.line = line
-            self.vec = Vector(line.first, line.second)
-            
-    def __contains__(self, other):
-        if type(other) == Point:
-            return (str(self.vec * Vector(self.line.first, other))[0] == self.sign
-                    or str(self.vec * Vector(self.line.first, other))[0] == 0)
-        if type(other) == Line:
-            pass
-        if type(other) == Beam:
-            if other.point in self:
-                return (str(self.vec * other.vec)[0] == self.sign
-                        or str(self.vec * other.vec)[0] == 0)
-        if type(other) == Triangle:
-            return ((str(self.vec * Vector(self.line.first, other.A))[0] == self.sign
-                    or str(self.vec * Vector(self.line.first, other.A))[0] == 0) and
-                    (str(self.vec * Vector(self.line.first, other.B))[0] == self.sign
-                    or str(self.vec * Vector(self.line.first, other.A))[0] == 0) and
-                    (str(self.vec * Vector(self.line.first, other.B))[0] == self.sign
-                    or str(self.vec * Vector(self.line.first, other.B))[0] == 0))
-        if type(other) == Circle:
-            if other.O in self:
-                return other.radius <= (other.O >> self.line)
-
-
 class Angle:
 
     def __init__(self, first, second, third=None):
