@@ -139,7 +139,7 @@ class Line:
 
     def __contains__(self, other):
         if type(other) == Point:
-            return (other >> self == 0)
+            return ((other >> self) == 0)
 
     def __and__(self, other):
         if type(other) == Line:
@@ -153,16 +153,16 @@ class Line:
                 self.A * other.C != self.C * other.A):
                 return ()
         if type(other) == Circle:
-            if other.O >> self == other.radius:
+            if (other.O >> self) == other.radius:
                 return (self & self.perpendicular_line(other.O))
-            if other.O >> self < other.radius:
+            if (other.O >> self) < other.radius:
                 return ((self & self.perpendicular_line(other.O)) +
                         Vector(self.first, self.second).unit_vector() *
                         (other.radius ** 2 - (other.O >> self) ** 2) ** 0.5,
                         (self.perpendicular_line(other.O) & self) -
                         Vector(self.first, self.second).unit_vector() *
                         (other.radius ** 2 - (other.O >> self) ** 2) ** 0.5)
-            if other.O >> self > other.radius:
+            if (other.O >> self) > other.radius:
                 return ()
 
     def parallel_line(self, other):
@@ -200,20 +200,20 @@ class Circle:
 
     def __contains__(self, other):
         if type(other) == Point:
-            return (self.O >> other == self.radius)
+            return ((self.O >> other) == self.radius)
 
     def __and__(self, other):
         if type(other) == Line:
-            if self.O >> other == self.radius:
+            if (self.O >> other) == self.radius:
                 return (other & other.perpendicular_line(self.O))
-            if self.O >> other < self.radius:
+            if (self.O >> other) < self.radius:
                 return ((other & other.perpendicular_line(self.O)) +
                         Vector(other.first, other.second).unit_vector() *
                         (self.radius ** 2 - (self.O >> other) ** 2) ** 0.5,
                         (other & other.perpendicular_line(self.O)) -
                         Vector(other.first, other.second).unit_vector() *
                         (self.radius ** 2 - (self.O >> other) ** 2) ** 0.5)
-            if self.O >> other > self.radius:
+            if (self.O >> other) > self.radius:
                 return ()
         if type(other) == Circle:
             if self.O == other.O:
@@ -288,7 +288,7 @@ class Segment:
 
     def __contains__(self, other):
         if type(other) == Point:
-            return (other >> self == 0)
+            return ((other >> self) == 0)
         
     def proportion(self, other):
         if type(other) == int or type(other) == float:
@@ -317,7 +317,7 @@ class Beam:
         if type(other) == Point:
             if Vector(self.O, other) ** self.direct > 0:
                 return (other >> Line(self.O, self.O + self.direct))
-            if vector(self.O, other) ** self.direct <= 0:
+            if Vector(self.O, other) ** self.direct <= 0:
                 return (other >> self.O)
 
     def __contains__(self, other):
