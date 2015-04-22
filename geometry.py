@@ -299,6 +299,12 @@ class Segment:
     def __contains__(self, other):
         if type(other) == Point:
             return (other >> self == 0)
+        
+    def proportion(self, other):
+        if type(other) == int or type(other) == float:
+            return (self.A + Vector(self.A, self.B) * other)
+    def middle(self):
+        return (self.proportion(0.5))
 
 
 class Beam:
