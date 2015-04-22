@@ -12,6 +12,11 @@ class Point:
     def __str__(self):
         return ('Point' + ' ' + str(self.x) + ' ' + str(self.y))
 
+    def __eq__(self, other):
+        if type(other) == Point:
+            return (self.x - other.x == 0 and
+                    self.y - other.y == 0)
+    
     def __add__(self, other):
         if type(other) == Vector:
             return (Point(self.x + other.x,
@@ -59,8 +64,6 @@ class Vector:
         if type(other) == Vector:
             return (self.x - other.x == 0 and
                     self.y - other.y == 0)
-        if type(other) != Vector:
-            return (False)
 
     def __add__(self, other):
         if type(other) == Vector:
@@ -94,6 +97,8 @@ class Vector:
         if type(other) == int or type(other) == float:
             return (Vector(self.x // other,
                            self.y // other))
+    def unit_vector(self):
+        return (self / abs(self))
 
 
 class Line:
@@ -116,6 +121,12 @@ class Line:
     def __str__(self):
         return ('Line' + ' ' + str(self.A) + ' ' + str(self.B) + ' ' + str(self.C))
 
+    def __eq__(self, other):
+        if type(other) == Line:
+            return (self.A - other.A == 0 and
+                    self.B - other.B == 0 and
+                    self.C - other.C == 0)
+    
     def __rshift__(self, other):
         if type(other) == Point:
             return (abs((self.A * other.x + self.B * other.y + self.C) /
@@ -137,22 +148,22 @@ class Line:
                               (self.C * other.A - self.A * other.C) / (self.A * other.B - self.B * other.A)))
             if (self.A * other.B == self.B * other.A and
                 self.A * other.C == self.C * other.A):
-                return (False)
+                return (self)
             if (self.A * other.B == self.B * other.A and
                 self.A * other.C != self.C * other.A):
-                return (None)
+                return ()
         if type(other) == Circle:
             if other.O >> self == other.radius:
                 return (self & self.perpendicular_line(other.O))
             if other.O >> self < other.radius:
                 return ((self & self.perpendicular_line(other.O)) +
-                        +(Vector(self.first, self.second)) *
+                        Vector(self.first, self.second).unit_vector() *
                         (other.radius ** 2 - (other.O >> self) ** 2) ** 0.5,
                         (self.perpendicular_line(other.O) & self) -
-                        +(Vector(self.first, self.second)) *
+                        Vector(self.first, self.second).unit_vector() *
                         (other.radius ** 2 - (other.O >> self) ** 2) ** 0.5)
             if other.O >> self > other.radius:
-                return (None)
+                return ()
 
     def parallel_line(self, other):
         if type(other) == int or type(other) == float:
@@ -186,76 +197,57 @@ class Circle:
     def __eq__(self, other):
         if type(other) == Circle:
             return (self.radius - other.radius == 0)
-        if type(other) != Circle:
-            return (False)
 
     def __contains__(self, other):
         if type(other) == Point:
             return (self.O >> other == self.radius)
 
     def __and__(self, other):
-            if type(other) == Line:
-                if self.O >> other == self.radius:
-                    return (other & other.perpendicular_line(self.O))
-                if self.O >> other < self.radius:
-                    return ((other & other.perpendicular_line(self.O)) +
-                            +(Vector(other.first, other.second)) *
-                            (self.radius ** 2 - (self.O >> other) ** 2) ** 0.5,
-                            (other & other.perpendicular_line(self.O)) -
-                            +(Vector(other.first, other.second)) *
-                            (self.radius ** 2 - (self.O >> other) ** 2) ** 0.5)
-                if self.O >> other > self.radius:
-                    return (None)
-            if type(other) == Circle:
-                if self.O == other.O:
-                    if self.radius == other.radius:
-                        return (False)
-                    if self.radius != other.radius:
-                        return (None)
-                if (self.O != other.O and
-                    self.O >> other.O > self.radius):
-                    if self.O >> other.O == self.radius + other.radius:
-                        return (self.O + (+(Vector(self.O, other.O)) * self.radius))
-                    if self.O >> other.O < self.radius + other.radius:
-                        return (self & Line(self.O, other.O).perpendicular_line(self.O +
-                                                                                          +(Vector(self.O, other.O)) *
-                                                                                          (self.radius ** 2 - other.radius ** 2 +
-                                                                                           (self.O >> other.O) ** 2) /
-                                                                                          ((self.O >> other.O) * 2)))
-                    if self.O >> other.O > self.radius + other.radius:
-                        return (None)
-                if (self.O != other.O and
-                    self.O >> other.O < self.radius):
-                    if self.O >> other.O == self.radius - other.radius:
-                        return (self.O + (Vector(self.O, other.O) /
-                                               +(Vector(self.O, other.O)) +
-                                               self.radius))
-                    if self.O >> other.O > self.radius - other.radius:
-                        return (self & Line(self.O, other.O).perpendicular_line(self.O +
-                                                                                          +(Vector(self.O, other.O)) *
-                                                                                          (self.radius ** 2 - other.radius ** 2 +
-                                                                                           (self.O >> other.O) ** 2) /
-                                                                                          ((self.O >> other.O) * 2)))
-                    if self.O >> other.O < self.radius - other.radius:
-                        return (None)
+        if type(other) == Line:
+            if self.O >> other == self.radius:
+                return (other & other.perpendicular_line(self.O))
+            if self.O >> other < self.radius:
+                return ((other & other.perpendicular_line(self.O)) +
+                        Vector(other.first, other.second).unit_vector() *
+                        (self.radius ** 2 - (self.O >> other) ** 2) ** 0.5,
+                        (other & other.perpendicular_line(self.O)) -
+                        Vector(other.first, other.second).unit_vector() *
+                        (self.radius ** 2 - (self.O >> other) ** 2) ** 0.5)
+            if self.O >> other > self.radius:
+                return ()
+        if type(other) == Circle:
+            if self.O == other.O:
+                if self.radius == other.radius:
+                    return (self)
+                if self.radius != other.radius:
+                    return ()
+            if self.O != other.O:
+                if self.radius + other.radius == (self.O >> other.O):
+                    return (self.O + Vector(self.O, other.O).unit_vector() * self.radius)
+                if self.radius + other.radius > (self.O >> other.O):
+                    return (self & Line(self.O, other.O).perpendicular_line(self.O +
+                                                                            Vector(self.O, other.O).unit_vector() *
+                                                                            ((self.O >> other.O) ** 2 + self.radius ** 2 - other.radius ** 2) /
+                                                                            ((self.O >> other.O) * 2)))
+                if self.radius + other.radius < (self.O >> other.O):
+                    return ()
 
     def perimeter(self):
-        return (self.radius * 2 * math.pi)
+        return (self.radius * math.pi * 2)
 
     def area(self):
         return (self.radius ** 2 * math.pi)
 
     def tangent_line(self, other):
         if type(other) == Point:
-            if other in Circle:
+            if other in self:
                 return (Line(self.O, other).perpendicular_line(other))
-            if other not in Circle:
-                if self.O >> other < self.radius:
-                    return (None)
-                if self.O >> other > self.radius:
-                    return (Line(other, self & Circle(other, ((self.O >> other) ** 2 - self.radius ** 2) ** 0.5))[0],
-                            Line(other, self & Circle(other, ((self.O >> other) ** 2 - self.radius ** 2) ** 0.5))[1])
-
+            if other not in self:
+                if self.radius < (self.O >> other):
+                    return (Line(other, (self & Circle(other, ((self.O >> other) ** 2 - self.radius ** 2) ** 0.5))[0]),
+                            Line(other, (self & Circle(other, ((self.O >> other) ** 2 - self.radius ** 2) ** 0.5))[1]))
+                if self.radius > (self.O >> other):
+                    return ()
 
 class Segment:
 
@@ -273,8 +265,6 @@ class Segment:
     def __eq__(self, other):
         if type(other) == Segment:
             return (abs(self) - abs(other) == 0)
-        if type(other) != Segment:
-            return (False)
 
     def __add__(self, other):
         if type(other) == Vector:
@@ -303,8 +293,6 @@ class Segment:
     def proportion(self, other):
         if type(other) == int or type(other) == float:
             return (self.A + Vector(self.A, self.B) * other)
-    def middle(self):
-        return (self.proportion(0.5))
 
 
 class Beam:
@@ -317,6 +305,11 @@ class Beam:
             self.O = first
             self.direct = second
 
+    def __eq__(self, other):
+        if type(other) == Beam:
+            return (self.O == other.O and
+                    self.direct == other.direct)
+            
     def __str__(self):
         return ('Beam' + ' ' + str(self.O) + ' ' + str(self.direct))
 
@@ -365,8 +358,6 @@ class Angle:
     def __eq__(self, other):
         if type(other) == Angle:
             return (abs(self) - abs(other) == 0)
-        if type(other) != Angle:
-            return (False)
 
     def __contains__(self, other):
         return (((Triangle(self.A, other, self.O).oriented_area() <= 0 and Triangle(self.A, self.B, self.O).oriented_area() <= 0) and
@@ -396,8 +387,6 @@ class Triangle:
         if type(other) == Triangle:
             return ({self.AB, self.BC, self.AC} ==
                     {other.AB, other.BC, other.AC})
-        if type(other) != Triangle:
-            return (False)
 
     def __add__(self, other):
         if type(other) == Vector:
