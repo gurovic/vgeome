@@ -16,7 +16,7 @@ class Point:
         if type(other) == Point:
             return (self.x - other.x == 0 and
                     self.y - other.y == 0)
-    
+
     def __add__(self, other):
         if type(other) == Vector:
             return (Point(self.x + other.x,
@@ -97,6 +97,7 @@ class Vector:
         if type(other) == int or type(other) == float:
             return (Vector(self.x // other,
                            self.y // other))
+
     def unit_vector(self):
         return (self / abs(self))
 
@@ -126,7 +127,7 @@ class Line:
             return (self.A - other.A == 0 and
                     self.B - other.B == 0 and
                     self.C - other.C == 0)
-    
+
     def __rshift__(self, other):
         if type(other) == Point:
             return (abs((self.A * other.x + self.B * other.y + self.C) /
@@ -249,6 +250,7 @@ class Circle:
                 if self.radius > (self.O >> other):
                     return ()
 
+
 class Segment:
 
     def __init__(self, first, second):
@@ -289,7 +291,7 @@ class Segment:
     def __contains__(self, other):
         if type(other) == Point:
             return ((other >> self) == 0)
-        
+
     def proportion(self, other):
         if type(other) == int or type(other) == float:
             return (self.A + Vector(self.A, self.B) * other)
@@ -348,7 +350,7 @@ class Angle:
                 self.O = first
                 self.A = first + second
                 self.B = first + third
-                
+
     def __str__(self):
         return ('Angle' + ' ' + str(self.O) + ' ' + str(self.first) + ' ' + str(self.second))
 
