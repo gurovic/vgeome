@@ -27,9 +27,24 @@ def new_Cevian(triangle):
     list_3 = new_median(triangle)
     data[segment] = data[segment]  + list_1 + list_2 + list_3
 
-def new_midle():
+def new_middle():
     data[point] += [triangle.AB.midle(), triangle.AC.midle(), triangle.CB.midle()
+
+def incenter(triangle):
+    pass
+
+def ortocenter(triangle):
+    return circle(triangle.A, triangle.C, triangle.B)
+
+def excircle(triangle):
+    pass                
+                    
+def new_circle(triangle):
+    list_1 = incenter(triangle)
+    list_2 = ortocenter(triangle)                
+  
 def main():
     for triangle in data[triangle]:
         new_Cevian(triangle)
-        new_midle(triangle)
+        new_middle(triangle)
+        new_circle(triangle)            
