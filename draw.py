@@ -25,5 +25,6 @@ for segment in segments:
     segment[0].A.y = -segment[0].A.y
     segment[0].B.y = -segment[0].B.y
     canvas.create_line(x0 + segment[0].A.x, y0 + segment[0].A.y, x0 + segment[0].B.x, y0 + segment[0].B.y)
+
 canvas.pack()
 root.mainloop()
