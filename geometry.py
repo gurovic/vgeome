@@ -1,6 +1,5 @@
 import math
 
-
 class Point:
 
     def __init__(self, first, second):
@@ -11,6 +10,9 @@ class Point:
 
     def __str__(self):
         return ('Point' + ' ' + str(self.x) + ' ' + str(self.y))
+    
+    def __neg__(self):
+        return (Point(-self.x, -self.y))
 
     def __eq__(self, other):
         if type(other) == Point:
@@ -189,8 +191,8 @@ class Circle:
             self.O = first
             self.radius = second
         if third != None:
-            self.O = Triangle(self, first, second).circumscribed_circle().O
-            self.radius = Triangle(self, first, second).circumscribed_circle().radius
+            self.O = Triangle(first, second, third).circumscribed_circle().O
+            self.radius = Triangle(first, second, third).circumscribed_circle().radius
 
     def __str__(self):
         return ('Circle' + ' ' + str(self.O) + ' ' + str(self.radius))
@@ -431,9 +433,9 @@ class Triangle:
 
     def circumcenter(self):
         return (Line(self.A, self.B).perpendicular_line(Point((self.A.x + self.B.x) / 2,
-                                                         (self.A.y + self.B.y) / 2)) &
+                                                              (self.A.y + self.B.y) / 2)) &
                 Line(self.A, self.C).perpendicular_line(Point((self.A.x + self.C.x) / 2,
-                                                         (self.A.y + self.C.y) / 2)))
+                                                              (self.A.y + self.C.y) / 2)))
 
     def inscribed_circle(self):
         return (Circle(self.incenter(), self.A >> self.incenter()))
