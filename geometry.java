@@ -128,7 +128,7 @@ class Triangle {
     }
 
     public double orientedArea() {
-        return AB.cross(AC) / 2;
+        return AB.productVector(AC) / 2;
     }
 }
 
